@@ -475,6 +475,15 @@ public class MyGame extends GameCore
 
 		if (!spriteMoved) { //if the sprite hasn't moved since the last update
 			
+			if (dx > dy) {
+				checkXCollision();
+				checkYCollision();
+			} else
+				if (dy > dx) {
+					checkYCollision();
+					checkXCollision();
+				}
+			
 			//sprites current mid left and right cos
 			Point[] horizontalPoints = sprite.getHorizontalPoints();
 
