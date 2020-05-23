@@ -491,10 +491,11 @@ public class MyGame extends GameCore
 				float oldX = horizontalPoints[i].x;
 				float newX = oldX + dx*elapsed;
 				float oldY = horizontalPoints[i].y;
+				float newY = oldY + dy*elapsed;
 
 				horizontalPoints[i].x = (int)newX;
 
-				if (collision(oldX, newX, oldY, oldY)) {
+				if (collision(oldX, newX, oldY, newY)) {
 					collisionX = true;
 					break;
 				}
@@ -553,10 +554,6 @@ public class MyGame extends GameCore
 				sprite.setX(sprite.getX()+dx*elapsed);
 			}
 
-			//check if the sprite collided with another sprite
-			if (sprite.equals(player)) {
-				checkPlayerCollision(player, false);
-			}
 
 			
 			//repeat for the y direction
@@ -565,12 +562,13 @@ public class MyGame extends GameCore
 
 			for (int i = 0; i < verticalPoints.length; i++) {
 				float oldX = verticalPoints[i].x;
+				float newX = oldX + dx*elapsed;
 				float oldY = verticalPoints[i].y;
 				float newY = oldY + dy*elapsed;
 
-				verticalPoints[i].y = (int)newY;
+				//verticalPoints[i].y = (int)newY;
 
-				if (collision(oldX, oldX, oldY, newY)) {
+				if (collision(oldX, newX, oldY, newY)) {
 					collisionY = true;
 					break;
 				}
@@ -654,6 +652,10 @@ public class MyGame extends GameCore
 			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null));
 			sprite.setVelocityX(-sprite.getVelocityX());
 		}
+	}
+	
+	private void collisionX() {
+		
 	}
 
 
