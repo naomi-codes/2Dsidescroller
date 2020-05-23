@@ -542,11 +542,11 @@ public class MyGame extends GameCore
 
 				//correct the sprite x
 				if (dx < 0) {
-					sprite.setX(closestX+4);}
+					sprite.setX(closestX);}
 				if (dx > 0) {
-					sprite.setX(closestX-sprite.getWidth()-4);
+					sprite.setX(closestX-sprite.getWidth());
 				}
-				sprite.setVelocityX(-sprite.getVelocityX());
+				sprite.setVelocityX(sprite.getVelocityX());
 
 
 			} else {
