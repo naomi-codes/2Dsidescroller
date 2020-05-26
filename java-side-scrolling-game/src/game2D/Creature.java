@@ -29,8 +29,17 @@ public class Creature extends Sprite {
 	private long stateTime;
 
 	private boolean onGround;
+	private int upCount;
 
 	
+	public int getUpCount() {
+		return upCount;
+	}
+
+	public void setUpCount(int upCount) {
+		this.upCount = upCount;
+	}
+
 	//useful constants
 	public static final float JUMP_SPEED = -0.5f;
 	public static final float MAX_FALLING_SPEED = 0.25f;
@@ -45,6 +54,9 @@ public class Creature extends Sprite {
 		this.walkRight = walkRight;
 		this.dyingLeft = deadLeft;
 		this.dyingRight = deadRight;
+		
+		this.onGround = false;
+		this.upCount = 0;
 
 		state = STATE_NORMAL;
 	}
@@ -149,8 +161,9 @@ public class Creature extends Sprite {
     if forceJump is true.
 	 */
 	public void jump(boolean forceJump) {
-		if (onGround || forceJump) {
+		if ((onGround || forceJump) && (upCount <= 2)) {
 			onGround = false;
+			upCount++;
 			setVelocityY(JUMP_SPEED);
 		}
 	}

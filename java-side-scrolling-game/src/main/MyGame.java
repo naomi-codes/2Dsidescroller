@@ -310,10 +310,6 @@ public class MyGame extends GameCore
 		player.setOffsets(xo, yo);
 		player.draw(g);
 
-		g.drawRect((int)player.getX(), (int)player.getY()+player.getHeight()/3, player.getWidth(), player.getHeight()/3);
-		g.drawRect((int)player.getX()+ player.getWidth()/3, (int)player.getY(), player.getWidth()/3, player.getHeight());
-
-
 		// Apply offsets to sprites then draw them
 		Iterator<Creature> iE = enemies.iterator();
 		while (iE.hasNext()) {
@@ -407,7 +403,13 @@ public class MyGame extends GameCore
 
 		// if the player is on the ground, jump
 		if (jumpIsPressed) {
-			player.jump(false);
+			
+			if (player.isOnGround()) {
+				jumpIsPressed = false;
+				player.jump(false);
+			} else {
+				player.jump(true);
+			}
 		}
 
 	}
@@ -453,8 +455,7 @@ public class MyGame extends GameCore
 		float dy = sprite.getVelocityY();
 
 		float currY = sprite.getY();
-
-
+		
 		if (!spriteMoved) { //if the sprite hasn't moved since the last update
 			//collisionX(sprite, elapsed);
 			int proposedNewX = (int)(sprite.getX()+dx*elapsed);
@@ -491,8 +492,9 @@ public class MyGame extends GameCore
 		}
 		
 		if (sprite.equals(player)) {
-			if (sprite.getY() + sprite.getHeight() <= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() )) {
+			if (sprite.getY() + sprite.getHeight() >= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() - 2 )) {
 				sprite.setOnGround(true);
+				sprite.setUpCount(0);
 			}
 		}
 	}
@@ -581,6 +583,8 @@ public class MyGame extends GameCore
 						sprite.setY(newY);
 					} else {
 						collision = true;
+						sprite.setOnGround(collision);
+						sprite.setUpCount(0);
 						break;
 					}
 
