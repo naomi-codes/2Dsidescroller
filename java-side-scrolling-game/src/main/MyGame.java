@@ -632,55 +632,67 @@ public class MyGame extends GameCore
 		Sprite collisionSprite = getSpriteCollision(player);
 
 		if (collisionSprite instanceof PowerUp.Goal) { //if the collision sprite was the treasure
-			Sound s = new Sound("sounds/goal.wav");
-			s.start();								   //load and play the goal sound
-			treasure.setAnimationFrame(1);			   //set the treasue frame to open
-			((PowerUp.Goal) collisionSprite).setCollected(true); //set the treasure to collected
-			visibleSprites.remove(collisionSprite);		//remove the treasure from the list of visible sprites
-			level++;									//increment the level
-			currentLevelMap = tmapLevel2;				//set the current map to level 2 (as there are only two levels)
-			background = backgroundLevel2;				//set the background image to level 2 background
-			total+=5000;								//increase the score
-			if ( level < 2) {
-				restart(true);							//restart new level parameter is true
-			} else {
-				pause();								//else end of level 2 do nothing
-			}
+			
+			collectTreasure(collisionSprite);
 
 		} else if (collisionSprite instanceof PowerUp.Crystal) { 	//if it was a crystal
-			collisionSprite.setY(collisionSprite.getY()-20);		// move the crystal position up	
-			total+=2000;											// increase the score
-			((PowerUp.Crystal) collisionSprite).setCollected(true);	// set the crystal to collect
+			collectCrystal(collisionSprite);
 
 		} else if (collisionSprite instanceof Creature) { //if the collision was with an enemy
 			Creature enemy = (Creature)collisionSprite;
 			// kill the enemy and make player bounce
-
-			
-			if (boundingCircleCollision(player, enemy)) { //if there is also a bounding circle collision with the enemy..
-				if (canKill) {								//and the player is moving downwards
-					this.leftIsPressed = false;				//force the player to stop moving
-					this.rightIsPressed = false;
-					enemy.setVelocityX(0);
-					player.jump(true);						//make the player jump even though they arent on the ground
-					Sound enemyDieSound = new Sound("sounds/enemyhurt.wav"); //load and play enemy hurt sound
-					enemyDieSound.start();
-					enemy.setState(Creature.STATE_DYING);						//set enemy to dying
-					total+=1000;												//increase score
-					//player.setY(enemy.getY() - player.getHeight());				//move the player up
-				} else {									
-					// player dies!
-					this.leftIsPressed = false;					//if the player is not moving horizontally
-					this.rightIsPressed = false;				//the enemy kills the player
-
-					player.setState(Creature.STATE_DYING);
-					Sound s = new Sound("sounds/gameover.wav");
-					s.start();
-				}
-			}
+		
+			killEnemy(player, canKill, enemy);
 
 		}
 	} //checkPlayerCollision
+
+	private void killEnemy(Creature player, boolean canKill, Creature enemy) {
+		if (boundingCircleCollision(player, enemy)) { //if there is also a bounding circle collision with the enemy..
+			if (canKill) {								//and the player is moving downwards
+				this.leftIsPressed = false;				//force the player to stop moving
+				this.rightIsPressed = false;
+				enemy.setVelocityX(0);
+				player.jump(true);						//make the player jump even though they arent on the ground
+				Sound enemyDieSound = new Sound("sounds/enemyhurt.wav"); //load and play enemy hurt sound
+				enemyDieSound.start();
+				enemy.setState(Creature.STATE_DYING);						//set enemy to dying
+				total+=1000;												//increase score
+				//player.setY(enemy.getY() - player.getHeight());				//move the player up
+			} else {									
+				// player dies!
+				this.leftIsPressed = false;					//if the player is not moving horizontally
+				this.rightIsPressed = false;				//the enemy kills the player
+
+				player.setState(Creature.STATE_DYING);
+				Sound s = new Sound("sounds/gameover.wav");
+				s.start();
+			}
+		}
+	}
+
+	private void collectCrystal(Sprite collisionSprite) {
+		collisionSprite.setY(collisionSprite.getY()-20);		// move the crystal position up	
+		total+=2000;											// increase the score
+		((PowerUp.Crystal) collisionSprite).setCollected(true);	// set the crystal to collect
+	}
+
+	private void collectTreasure(Sprite collisionSprite) {
+		Sound s = new Sound("sounds/goal.wav");
+		s.start();								   //load and play the goal sound
+		treasure.setAnimationFrame(1);			   //set the treasue frame to open
+		((PowerUp.Goal) collisionSprite).setCollected(true); //set the treasure to collected
+		visibleSprites.remove(collisionSprite);		//remove the treasure from the list of visible sprites
+		level++;									//increment the level
+		currentLevelMap = tmapLevel2;				//set the current map to level 2 (as there are only two levels)
+		background = backgroundLevel2;				//set the background image to level 2 background
+		total+=5000;								//increase the score
+		if ( level < 2) {
+			restart(true);							//restart new level parameter is true
+		} else {
+			pause();								//else end of level 2 do nothing
+		}
+	}
 
 
 	/**
@@ -775,48 +787,7 @@ public class MyGame extends GameCore
 		return false;
 	} // cornerCollision
 
-	/**
-	 * 
-	 * @param oldX sprite current x
-	 * @param newX sprite new x after movement
-	 * @param oldY sprite current y 
-	 * @param newY sprite new y after movement
-	 * @return true if there is no collision with a tile at any point between the old and new cos
-	 */
-	public boolean tileMapCollision(float oldX, float newX, float oldY, float newY) {
-
-		float fromX = Math.min(oldX, newX);
-		float fromY = Math.min(oldY, newY);
-		float toX = Math.max(oldX, newX);
-		float toY = Math.max(oldY, newY);
-
-		//get the tile locations
-		int fromTileX = (int)Math.floor(fromX/currentLevelMap.getTileWidth());
-		int fromTileY  = (int)Math.floor(fromY/currentLevelMap.getTileHeight());
-		int toTileX = (int)Math.floor(toX/currentLevelMap.getTileWidth());
-		int toTileY = (int)Math.floor(toY/currentLevelMap.getTileHeight());
-
-		//check if there is a collision for the path of movement
-		for (int x = fromTileX; x <= toTileX; x++) {
-			for (int y = fromTileY; y<= toTileY; y++) {
-				if (currentLevelMap.getTileChar(x, y) != '?' && currentLevelMap.getTileChar(x, y) != '.'
-						) {
-					Tile t = currentLevelMap.getTile(x, y);
-					if ((newX >= t.getXC()) &&
-							(newX < t.getXC() + currentLevelMap.getTileWidth()) &&
-							(newY >= t.getYC()) &&
-							(newY < t.getYC() + currentLevelMap.getTileHeight())) {
-
-						return true;
-					}
-
-				}
-
-			} 					
-		}	
-		return false;
-	} // tileMapCollision
-
+	
 	/**
 	 * load the animations for the player and initialises the player sprite
 	 */
