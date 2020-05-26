@@ -300,7 +300,7 @@ public class MyGame extends GameCore
 		while (iC.hasNext()) {
 			Sprite crystal = iC.next();
 			crystal.setOffsets(xo+currentLevelMap.getTileWidth()/4,currentLevelMap.getTileHeight());
-			crystal.setScale((float) 0.5);
+			crystal.setScale((float)0.5);
 			crystal.drawTransformed(g);
 		}
 
@@ -681,10 +681,12 @@ public class MyGame extends GameCore
 		}
 	}
 
-	private void collectCrystal(Sprite collisionSprite) {
-		collisionSprite.setY(collisionSprite.getY()-20);		// move the crystal position up	
+	private void collectCrystal(Sprite powerUp) {
+		if (boundingCircleCollision(player, powerUp)) {
+			powerUp.setY(powerUp.getY()-20);		// move the crystal position up	
 		total+=2000;											// increase the score
-		((PowerUp.Crystal) collisionSprite).setCollected(true);	// set the crystal to collect
+		((PowerUp.Crystal) powerUp).setCollected(true);	// set the crystal to collect
+		}
 	}
 
 	private void collectTreasure(Sprite collisionSprite) {
@@ -752,22 +754,23 @@ public class MyGame extends GameCore
 	 * @param enemy collided with
 	 * @return whether not the circles bounding the player and the enemy overlap
 	 */
-	public boolean boundingCircleCollision(Creature player, Creature enemy) {
+	public boolean boundingCircleCollision(Creature player, Sprite sprite) {
 		float playerCenterX = player.getX()+player.getWidth()/2;
 		float playerCenterY = player.getY()+player.getHeight()/2;
 
-		float enemyCenterX = enemy.getX()+enemy.getWidth()/2;
-		float enemyCenterY = enemy.getY()+enemy.getHeight()/2;
+		float enemyCenterX = sprite.getX()+sprite.getWidth()/2;
+		float enemyCenterY = sprite.getY()+sprite.getHeight()/2;
 
 		float dx, dy, minimum;
 
 		dx = playerCenterX - enemyCenterX;
 		dy = playerCenterY - enemyCenterY;
 
-
-		minimum = (player.getRadius() + enemy.getRadius());
-		System.out.println((minimum*minimum));
-		System.out.println((dx * dx) + (dy * dy));
+		float spriteRadius = sprite.getRadius();
+		if (sprite instanceof PowerUp) {
+			spriteRadius = spriteRadius/4;
+		}
+		minimum = (player.getRadius() + sprite.getRadius());
 		return (((dx * dx) + (dy * dy)) < (minimum*minimum));
 	} //boundingCircleCollision
 

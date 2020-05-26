@@ -1,7 +1,5 @@
 package game2D;
 
-import java.awt.Graphics2D;
-
 /**
     A PowerUp class is a Sprite that the player can pick up.
  */
