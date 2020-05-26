@@ -1,18 +1,20 @@
 package game2D;
 
+import java.awt.Graphics2D;
+
 /**
     A PowerUp class is a Sprite that the player can pick up.
-*/
+ */
 public abstract class PowerUp extends Sprite {
 
 	boolean collected;
-    public PowerUp(Animation anim) {
-        super(anim);
-        collected = false;
-    }
+	public PowerUp(Animation anim) {
+		super(anim);
+		collected = false;
+	}
 
 
-    public boolean isCollected() {
+	public boolean isCollected() {
 		return collected;
 	}
 
@@ -23,20 +25,21 @@ public abstract class PowerUp extends Sprite {
 
 	/**
         A Star PowerUp. Gives the player points.
-    */
-    public static class Crystal extends PowerUp {
-        public Crystal(Animation anim) {
-            super(anim);
-        }
-    }
+	 */
+	public static class Crystal extends PowerUp {
+		public Crystal(Animation anim) {
+			super(anim);
+		}
+	}
 
-    /**
+	/**
         A Goal PowerUp. Advances to the next map.
-    */
-    public static class Goal extends PowerUp {
-        public Goal(Animation anim) {
-            super(anim);
-        }
-    }
+	 */
+	public static class Goal extends PowerUp {
+		public Goal(Animation anim) {
+			super(anim);
+		}
+	}
+
 
 }

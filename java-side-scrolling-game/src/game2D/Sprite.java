@@ -138,13 +138,6 @@ public class Sprite {
     public void update(long elapsedTime) {
     	if (!render) return;
     	
-    	
-    	//x += dx * elapsedTime;
-        //y += dy * elapsedTime;
-        
-        //anim.update(elapsedTime);
-    	
-    	
         width = anim.getImage().getWidth(null);
         height = anim.getImage().getHeight(null);
         if (width > height)
@@ -180,18 +173,7 @@ public class Sprite {
     public void setY(float y) {
     	this.y = y;        
     }
-    
  
-
-    public void shiftX(float shift)
-    {
-    	this.x += shift;
-    }
-    
-    public void shiftY(float shift)
-    {
-    	this.y += shift;
-    }
     
     /**
         Gets this Sprite's width, based on the size of the

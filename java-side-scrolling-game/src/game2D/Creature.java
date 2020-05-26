@@ -46,7 +46,7 @@ public class Creature extends Sprite {
 	//useful constants
 	public static final float JUMP_SPEED = -0.5f;
 	public static final float MAX_FALLING_SPEED = 0.25f;
-	public static final float MAX_SPEED = 0.08f;
+	public static final float MAX_SPEED = 0.1f;
 
 	public Creature(Animation idleLeft, Animation idleRight, Animation walkLeft,
 			Animation walkRight, Animation deadLeft, Animation deadRight) {
@@ -239,8 +239,8 @@ public class Creature extends Sprite {
 
 		Point topLeft = new Point(sX+5, sY);
 		//Point midTop = new Point(sX + this.getWidth()/2, sY);
-		Point topRight = new Point(sX + this.getWidth()-5, sY);
-		Point bottomRight = new Point(sX + this.getWidth()-5, sY + this.getHeight());
+		Point topRight = new Point(sX+5 + this.getWidth()-5, sY);
+		Point bottomRight = new Point(sX+5 + this.getWidth()-5, sY + this.getHeight());
 		Point midBottom = new Point(sX + this.getWidth()/2, sY + this.getHeight());
 		Point bottomLeft = new Point(sX+5, sY + this.getHeight());
 
@@ -250,6 +250,30 @@ public class Creature extends Sprite {
 		corners[2] = bottomRight;
 		corners[3] = bottomLeft;
 		corners[4] = midBottom;
+		//corners[5] = midTop;
+
+		return corners;
+	}
+	
+	public Point[] getCorners(int x) {
+		Point[] corners = new Point[4];
+
+		int sX = (int)this.getX();
+		int sY = (int)this.getY();
+
+		Point topLeft = new Point(sX, sY);
+		//Point midTop = new Point(sX + this.getWidth()/2, sY);
+		Point topRight = new Point(sX + this.getWidth()-5, sY);
+		Point bottomRight = new Point(sX + this.getWidth()-5, sY + this.getHeight());
+		//Point midBottom = new Point(sX + this.getWidth()/2, sY + this.getHeight());
+		Point bottomLeft = new Point(sX, sY + this.getHeight());
+
+		corners[0] = topLeft;
+
+		corners[1] = topRight;
+		corners[2] = bottomRight;
+		corners[3] = bottomLeft;
+		//corners[4] = midBottom;
 		//corners[5] = midTop;
 
 		return corners;

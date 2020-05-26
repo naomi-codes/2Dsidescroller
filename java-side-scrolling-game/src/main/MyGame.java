@@ -109,7 +109,7 @@ public class MyGame extends GameCore
 
 		// Create 5 enemies at random positions off the screen
 		// to the right
-		for (int e=0; e<5; e++)
+		for (int e=0; e<3; e++)
 		{
 			enemies.add(loadEnemySprite());
 		}
@@ -214,7 +214,6 @@ public class MyGame extends GameCore
 
 		//set positions for enemies
 		for (Creature e:enemies) {
-			//e.setX(400);
 			e.setX(SCREEN_WIDTH + (int)(Math.random()*300.0f));
 			e.setY(currentLevelMap.getPixelHeight()-2*currentLevelMap.getTileHeight());
 			e.setVelocityX(-0.01f);
@@ -300,15 +299,14 @@ public class MyGame extends GameCore
 		Iterator<PowerUp> iC = crystals.iterator();
 		while (iC.hasNext()) {
 			Sprite crystal = iC.next();
-			crystal.setOffsets(xo,yo);
-			crystal.draw(g);
+			crystal.setOffsets(xo+currentLevelMap.getTileWidth()/4,currentLevelMap.getTileHeight());
+			crystal.setScale((float) 0.5);
+			crystal.drawTransformed(g);
 		}
 
 		//aply offsets to player and draw
 		player.setOffsets(xo, yo);
 		player.draw(g);
-		
-		g.drawRect((int)player.getX()+xo, (int)player.getY()+yo, player.getWidth(), player.getHeight());
 
 		// Apply offsets to sprites then draw them
 		Iterator<Creature> iE = enemies.iterator();
@@ -316,7 +314,6 @@ public class MyGame extends GameCore
 			Creature enemy = iE.next();
 			enemy.setOffsets(xo,yo);
 			enemy.draw(g);
-			g.drawRect((int)enemy.getX()+xo, (int)enemy.getY()+yo, player.getWidth(), player.getHeight());
 		}
 
 
@@ -345,10 +342,8 @@ public class MyGame extends GameCore
 			//apply gravity
 			player.setVelocityY(player.getVelocityY()+(GRAVITY*elapsed));
 
-
 			//set the animation speed for the player
 			player.setAnimationSpeed(1.0f);
-
 
 			// Now update the sprites animation and position
 
@@ -404,7 +399,7 @@ public class MyGame extends GameCore
 
 		// if the player is on the ground, jump
 		if (jumpIsPressed) {
-			
+
 			if (player.isOnGround()) {
 				jumpIsPressed = false;
 				player.jump(false);
@@ -419,7 +414,7 @@ public class MyGame extends GameCore
 			player.setAttacking(false);
 		}
 	} // processInput
-	
+
 	/**
 	 * 
 	 * @param sprite
@@ -456,18 +451,27 @@ public class MyGame extends GameCore
 	 * @param elapsed	How time has gone by
 	 */
 	public void handleTileMapCollisions(Creature sprite, long elapsed, boolean spriteMoved)
-	{			
+	{		
+		//if the player is at the far left of the map
+		if (sprite.getX() < 2) 
+		{
+			sprite.setX(2);
+			sprite.setVelocityX(-sprite.getVelocityX());
+		} else if (sprite.getX() + sprite.getImage().getWidth(null) >= currentLevelMap.getPixelWidth() - 2) {
+			sprite.setVelocityX(-sprite.getVelocityX());
+			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null) - 2);	
+		}
 
 		float dx = sprite.getVelocityX();
 		float dy = sprite.getVelocityY();
 
 		float currY = sprite.getY();
-		
+
 		if (!spriteMoved) { //if the sprite hasn't moved since the last update
 			//collisionX(sprite, elapsed);
 			int proposedNewX = (int)(sprite.getX()+dx*elapsed);
 			moveX(sprite, elapsed, proposedNewX);
-			
+
 			int proposedNewY = (int)(sprite.getY() + dy * elapsed);
 			moveY(sprite, elapsed, proposedNewY);
 
@@ -478,95 +482,90 @@ public class MyGame extends GameCore
 		} 
 
 		//the player is below the ground
-		if (sprite.getY() + sprite.getHeight() > currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight()) //
-		{
-			// Put the player back on the map
-			sprite.setY(currentLevelMap.getPixelHeight()  - sprite.getHeight() - currentLevelMap.getTileHeight()); //- currentLevelMap.getTileHeight()
-		}
 
-		//if the player is at the far left of the map
-		if (sprite.getX() < 2) 
-		{
-			sprite.setX(2);
-			sprite.setVelocityX(-sprite.getVelocityX());
-		}
 
-		//check if the sprite is at the far right of the map
 
-		if (sprite.getX() + sprite.getImage().getWidth(null) > currentLevelMap.getPixelWidth()) {
-			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null));
-			sprite.setVelocityX(-sprite.getVelocityX());
-		}
-		
-		if (sprite.equals(player)) {
-			if (sprite.getY() + sprite.getHeight() >= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() - 2 )) {
-				sprite.setOnGround(true);
-				sprite.setUpCount(0);
-			}
+		if (sprite.getY() + sprite.getHeight() >= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() - 2 )) {
+			sprite.setOnGround(true);
+			sprite.setUpCount(0);
 		}
 	} // handleTileMapCollisions
 
-	
+
 	private void moveX(Creature sprite, long elapsed, int proposedNewX) {
 		//current speed of sprite  in the x direction
 		float dx = sprite.getVelocityX();
+		float dy = sprite.getVelocityY();
 
 		//whether or not there has been a collision
 		boolean collision = false;
 
 		int newX = (int)sprite.getX();
 
+
 		// while we still have not collided and we have less than the proposed amount
+		if (sprite.getX() + sprite.getImage().getWidth(null) >= currentLevelMap.getPixelWidth()) {
+			sprite.setVelocityX(-sprite.getVelocityX());
+			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null) - 2);	
+		} else {
+			if ( dx > 0) {
+				// check if is left collision or right collision
+				while (!collision) {
+					newX = (int)sprite.getX() + 2;
 
-		if ( dx > 0) {
-			// check if is left collision or right collision
-			while (newX <= proposedNewX) {
-				if (!collision) {
-					newX = (int)sprite.getX() + 1;
+						int tileX = (int)Math.floor((newX + sprite.getWidth())/currentLevelMap.getTileWidth());
+						int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
 
-					int tileX = (int)Math.floor((newX+ sprite.getWidth())/currentLevelMap.getTileWidth());
-					int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
+						int topTileY = tileY -1;
+						
+						if (currentLevelMap.getTileChar(tileX, tileY) == '.'  && currentLevelMap.getTileChar(tileX, topTileY) == '.' ) {
+							sprite.setX(newX);
+							collision = true;
+							break;
+						} else {
+							collision = true;
+							sprite.setX((currentLevelMap.getTileXC(tileX, tileY)) - sprite.getWidth());
+							sprite.setVelocityX(-sprite.getVelocityX());
+							sprite.setX(sprite.getX()-2);
+							break;
+						}
 
-					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
-						sprite.setX(newX);
-					} else {
-						collision = true;
-						sprite.setVelocityX(-sprite.getVelocityX());
-						sprite.setX(sprite.getX()-1);
-						break;
 					}
-
-				}
 			}
-		}
-		
-		if ( dx < 0) {
-			// check if is left collision or right collision
-			while (newX >= proposedNewX) {
-				if (!collision) {
-					newX = (int)sprite.getX() - 1;
 
-					int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
-					int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
+			if ( dx < 0) {
+				// check if is left collision or right collision
+				while (newX >= proposedNewX) {
+					if (!collision) {
+						newX = (int)sprite.getX() - 2;
 
-					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
-						sprite.setX(newX);
-					} else {
-						collision = true;
-						sprite.setX(currentLevelMap.getTileXC(tileX+1, tileY));
-						sprite.setX(sprite.getX()+1);
-						sprite.setVelocityX(-sprite.getVelocityX());
-						break;
+						int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
+						int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
+
+						int topTileY = tileY -1;
+						
+						if (currentLevelMap.getTileChar(tileX, tileY) == '.'  && currentLevelMap.getTileChar(tileX,topTileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+							sprite.setX(newX);
+							break;
+						} else {
+							collision = true;
+							sprite.setX(currentLevelMap.getTileXC(tileX+1, tileY));
+							sprite.setX(sprite.getX()+2);
+							sprite.setVelocityX(-sprite.getVelocityX());
+							break;
+						}
+
 					}
-
 				}
 			}
 		}
 
 	} //moveX
 
-	
+
 	private void moveY(Creature sprite, long elapsed, int proposedNewY) {
+
+
 		//current speed of sprite  in the x direction
 		float dy = sprite.getVelocityY();
 
@@ -581,36 +580,47 @@ public class MyGame extends GameCore
 			// check if is top collision or bottom collision
 			while (newY <= proposedNewY) {
 				if (!collision) {
-					newY = (int)sprite.getY() + 1;
+					newY = (int)sprite.getY() + 2;
 
 					int tileX = (int)Math.floor((sprite.getX()+sprite.getWidth()/2)/currentLevelMap.getTileWidth());
 					int tileY = (int)Math.floor((newY + sprite.getHeight())/currentLevelMap.getTileHeight());
 
-					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
-						sprite.setY(newY);
+					int leftTileX = tileX -1;
+					int rightTileX = tileX +1;
+
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(rightTileX, tileY) == '.' &&
+							currentLevelMap.getTileChar(leftTileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g' && currentLevelMap.getTileChar(tileX, tileY) != '?') {
+						sprite.setY(newY-1);
+						collision = true;
+						break;
 					} else {
 						collision = true;
 						sprite.setOnGround(collision);
 						sprite.setUpCount(0);
+						sprite.setVelocityY(0);
 						break;
 					}
 
 				}
 			}
 		}
-		
+
 		if ( dy < 0) {
 			// check if is left collision or right collision
 			while (newY >= proposedNewY) {
 				if (!collision) {
-					newY = (int)sprite.getY() - 1;
+					newY = (int)sprite.getY() - 2;
 
 					int tileX = (int)Math.floor((sprite.getX()+sprite.getWidth()/2)/currentLevelMap.getTileWidth());
 					int tileY = (int)Math.floor((newY/currentLevelMap.getTileHeight()));
 
+					int leftTileX = tileX -1;
+					int rightTileX = tileX +1;
 
-					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.'  && currentLevelMap.getTileChar(rightTileX, tileY) == '.' &&
+							currentLevelMap.getTileChar(leftTileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g' && currentLevelMap.getTileChar(tileX, tileY) != 'l' && currentLevelMap.getTileChar(tileX, tileY) != '?') {
 						sprite.setY(newY);
+						break;
 					} else {
 						collision = true;
 						sprite.setY(currentLevelMap.getTileYC(tileX, tileY+1));
@@ -622,7 +632,7 @@ public class MyGame extends GameCore
 			}
 		}
 	} //moveY
-	
+
 	private void checkPlayerCollision(Creature player, boolean canKill) {
 		if (!player.isAlive()) {
 			return;
@@ -632,7 +642,7 @@ public class MyGame extends GameCore
 		Sprite collisionSprite = getSpriteCollision(player);
 
 		if (collisionSprite instanceof PowerUp.Goal) { //if the collision sprite was the treasure
-			
+
 			collectTreasure(collisionSprite);
 
 		} else if (collisionSprite instanceof PowerUp.Crystal) { 	//if it was a crystal
@@ -641,7 +651,7 @@ public class MyGame extends GameCore
 		} else if (collisionSprite instanceof Creature) { //if the collision was with an enemy
 			Creature enemy = (Creature)collisionSprite;
 			// kill the enemy and make player bounce
-		
+
 			killEnemy(player, canKill, enemy);
 
 		}
@@ -779,7 +789,7 @@ public class MyGame extends GameCore
 			int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
 			int tileY = (int)Math.floor(newY/currentLevelMap.getTileHeight());
 
-			if ((currentLevelMap.getTileChar(tileX, tileY) != '.'))  {
+			if ((currentLevelMap.getTileChar(tileX, tileY) != '.')  && currentLevelMap.getTileChar(tileX, tileY) != '?' )  {
 				return true;
 			}
 		}
@@ -787,7 +797,7 @@ public class MyGame extends GameCore
 		return false;
 	} // cornerCollision
 
-	
+
 	/**
 	 * load the animations for the player and initialises the player sprite
 	 */
@@ -809,7 +819,7 @@ public class MyGame extends GameCore
 
 		player = new Creature(idleLeft, idleRight, walkLeft,
 				walkRight, deadLeft, deadRight, attackLeft, attackRight);
- 
+
 	} // loadPlayer 
 
 	/**
@@ -944,19 +954,19 @@ public class MyGame extends GameCore
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
