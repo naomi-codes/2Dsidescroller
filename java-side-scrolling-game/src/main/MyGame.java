@@ -123,11 +123,7 @@ public class MyGame extends GameCore
 
 		initialiseGame();
 
-		System.out.println(tmapLevel1);
-		System.out.println(tmapLevel2);
-
 	} //init
-
 
 
 	/**
@@ -180,6 +176,11 @@ public class MyGame extends GameCore
 
 	} //initialiseGame
 
+	
+	/**
+	 * restart: resets the level, "refreshing all sprites"
+	 * @param newLevel - whether or not a new level should be loaded
+	 */
 	public void restart(boolean newLevel) {
 		//clear all lists
 		visibleSprites.clear();
@@ -243,8 +244,9 @@ public class MyGame extends GameCore
 
 	} // restart
 
+	
 	/**
-	 * pauses the game if not paused by stopping sprite movements
+	 *  Pauses the game if not paused by stopping sprite movements
 	 */
 	private void pause() {
 		for (Creature e: enemies) {
@@ -255,7 +257,7 @@ public class MyGame extends GameCore
 	} // pause
 
 	/**
-	 * called if the sprite is killed and calls the restart method
+	 * Called if the sprite is killed and calls the restart method
 	 */
 	public void gameOver() {
 		pause();
@@ -266,6 +268,8 @@ public class MyGame extends GameCore
 
 	/**
 	 * Draw the current state of the game
+	 * 
+	 *@param g - the graphics object to draw to  
 	 */
 	public void draw(Graphics2D g)
 	{    	
@@ -381,8 +385,11 @@ public class MyGame extends GameCore
 	} //update
 
 
+	/**
+	 * Processes any input since the last update.
+	 * Called by update()
+	 */
 	public void processInput() {
-
 
 		if (leftIsPressed) { //left key
 
@@ -417,8 +424,11 @@ public class MyGame extends GameCore
 
 	/**
 	 * 
-	 * @param sprite
-	 * @param elapsed
+	 * Updates the sprite passed in, moving their position if possible
+	 * otherwise triggering collision handling
+	 * 
+	 * @param sprite - the sprite to be updated
+	 * @param elapsed - duration since start of game
 	 */
 	private void updateCreature(Creature sprite, long elapsed) {
 		//get the current creature speed in each direction
@@ -445,14 +455,14 @@ public class MyGame extends GameCore
 
 	/**
 	 * Checks and handles collisions with the tile map for the
-	 * given sprite 's'. Initial functionality is limited...
+	 * given sprite 's'.
 	 * 
 	 * @param s			The Sprite to check collisions for
 	 * @param elapsed	How time has gone by
 	 */
 	public void handleTileMapCollisions(Creature sprite, long elapsed, boolean spriteMoved)
 	{		
-		//if the player is at the far left of the map
+		//if the player is at the far left or right of the map
 		if (sprite.getX() < 2) 
 		{
 			sprite.setX(2);
@@ -480,11 +490,8 @@ public class MyGame extends GameCore
 				checkPlayerCollision(player, canKill);
 			}
 		} 
-
+		
 		//the player is below the ground
-
-
-
 		if (sprite.getY() + sprite.getHeight() >= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() - 2 )) {
 			sprite.setOnGround(true);
 			sprite.setUpCount(0);
@@ -492,6 +499,14 @@ public class MyGame extends GameCore
 	} // handleTileMapCollisions
 
 
+	/**
+	 * 
+	 * Moves the x position of a sprite after a collision has been detected
+	 * 
+	 * @param sprite
+	 * @param elapsed
+	 * @param proposedNewX
+	 */
 	private void moveX(Creature sprite, long elapsed, int proposedNewX) {
 		//current speed of sprite  in the x direction
 		float dx = sprite.getVelocityX();
@@ -563,8 +578,15 @@ public class MyGame extends GameCore
 	} //moveX
 
 
+	/**
+	 * 
+	 * Moves the y position of a sprite after a collision has been detected
+	 * 
+	 * @param sprite
+	 * @param elapsed
+	 * @param proposedNewY
+	 */
 	private void moveY(Creature sprite, long elapsed, int proposedNewY) {
-
 
 		//current speed of sprite  in the x direction
 		float dy = sprite.getVelocityY();
@@ -633,6 +655,12 @@ public class MyGame extends GameCore
 		}
 	} //moveY
 
+	/**
+	 * Checks player collision with another sprite
+	 * 
+	 * @param player
+	 * @param canKill
+	 */
 	private void checkPlayerCollision(Creature player, boolean canKill) {
 		if (!player.isAlive()) {
 			return;
@@ -653,10 +681,16 @@ public class MyGame extends GameCore
 			// kill the enemy and make player bounce
 
 			killEnemy(player, canKill, enemy);
-
 		}
 	} //checkPlayerCollision
 
+	/**
+	 * Called when the player is able to kill an enemy sprite
+	 * 
+	 * @param player
+	 * @param canKill
+	 * @param enemy
+	 */
 	private void killEnemy(Creature player, boolean canKill, Creature enemy) {
 		if (boundingCircleCollision(player, enemy)) { //if there is also a bounding circle collision with the enemy..
 			if (canKill) {								//and the player is moving downwards
@@ -681,6 +715,11 @@ public class MyGame extends GameCore
 		}
 	}
 
+	/**
+	 * Called when a player interacts with a crystal
+	 * 
+	 * @param powerUp
+	 */
 	private void collectCrystal(Sprite powerUp) {
 		if (boundingCircleCollision(player, powerUp)) {
 			powerUp.setY(powerUp.getY()-20);		// move the crystal position up	
@@ -689,6 +728,12 @@ public class MyGame extends GameCore
 		}
 	}
 
+	
+	/**
+	 * Called when the sprite interacts with the treasure goal
+	 * 
+	 * @param collisionSprite
+	 */
 	private void collectTreasure(Sprite collisionSprite) {
 		Sound s = new Sound("sounds/goal.wav");
 		s.start();								   //load and play the goal sound
@@ -749,6 +794,8 @@ public class MyGame extends GameCore
 	}//boundingBoxCollision
 
 	/**
+	 * Checks for a bounding circle collision between the player and another
+	 * sprite. 
 	 * 
 	 * @param player
 	 * @param enemy collided with
@@ -775,6 +822,14 @@ public class MyGame extends GameCore
 	} //boundingCircleCollision
 
 
+	/**
+	 * Checks whether a collision has occurred at any of a sprite's
+	 * corners
+	 * 
+	 * @param sprite
+	 * @param elapsed
+	 * @return
+	 */
 	private boolean cornerCollision(Creature sprite, long elapsed) {
 		// do this for all four corners - reject movement if true;
 		// when you do this for all four corners make sure to "switch off checking for the ground
