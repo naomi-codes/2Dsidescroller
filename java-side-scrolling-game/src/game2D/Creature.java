@@ -1,6 +1,8 @@
 package game2D;
 
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 
 public class Creature extends Sprite {
 
@@ -30,7 +32,7 @@ public class Creature extends Sprite {
 
 	
 	//useful constants
-	public static final float JUMP_SPEED = -0.2f;
+	public static final float JUMP_SPEED = -0.5f;
 	public static final float MAX_FALLING_SPEED = 0.25f;
 	public static final float MAX_SPEED = 0.08f;
 
@@ -128,6 +130,8 @@ public class Creature extends Sprite {
 			newAnim.pauseAt(newAnim.getNoOfFrames()-1);
 			setState(STATE_DEAD);
 		}
+		
+		
 	}
 
 
@@ -152,41 +156,38 @@ public class Creature extends Sprite {
 	}
 
 
-	/**
-	 * used to set the state flag onGround to true when sprite falls and hits the ground
-	 */
-	public void collideVertical() {
-		// check if collided with ground
-
-		 if (getVelocityY() > 0) {
-	            onGround = true;
-	        }
-		super.setVelocityY(0);    
+	public boolean isOnGround() {
+		return onGround;
 	}
 
+	public void setOnGround(boolean onGround) {
+		this.onGround = onGround;
+	}
+	
 	/**
 	 * 
 	 * @return an array list containing corner points and mid points of sprite
 	 */
 	public Point[] getCorners() {
-		Point[] corners = new Point[6];
+		Point[] corners = new Point[5];
 
 		int sX = (int)this.getX();
 		int sY = (int)this.getY();
 
 		Point topLeft = new Point(sX+5, sY);
-		Point midTop = new Point(sX + this.getWidth()/2, sY);
+		//Point midTop = new Point(sX + this.getWidth()/2, sY);
 		Point topRight = new Point(sX + this.getWidth()-5, sY);
 		Point bottomRight = new Point(sX + this.getWidth()-5, sY + this.getHeight());
 		Point midBottom = new Point(sX + this.getWidth()/2, sY + this.getHeight());
 		Point bottomLeft = new Point(sX+5, sY + this.getHeight());
 
 		corners[0] = topLeft;
-		corners[1] = midTop;
-		corners[2] = topRight;
-		corners[3] = bottomRight;
+		
+		corners[1] = topRight;
+		corners[2] = bottomRight;
+		corners[3] = bottomLeft;
 		corners[4] = midBottom;
-		corners[5] = bottomLeft;
+		//corners[5] = midTop;
 
 		return corners;
 	}
