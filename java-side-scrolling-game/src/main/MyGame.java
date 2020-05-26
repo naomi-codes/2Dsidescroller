@@ -31,7 +31,7 @@ public class MyGame extends GameCore
 
 	// Useful game constants
 	private static final int SCREEN_WIDTH = 900;
-	private static final int SCREEN_HEIGHT = 640;
+	private static final int SCREEN_HEIGHT = 700;
 	private static final float	GRAVITY = 0.001f;
 
 	// Game state flags
@@ -39,6 +39,7 @@ public class MyGame extends GameCore
 	private boolean jumpIsPressed = false;
 	private boolean leftIsPressed = false;
 	private boolean rightIsPressed = false;
+	private boolean attackIsPressed = false;
 
 	private int level = 0;
 
@@ -119,9 +120,6 @@ public class MyGame extends GameCore
 			anim.addFrame(loadImage("images/powerups/crystal01.png"), 150);
 			crystals.add(new PowerUp.Crystal(anim));
 		}
-
-
-
 
 		initialiseGame();
 
@@ -219,7 +217,7 @@ public class MyGame extends GameCore
 			//e.setX(400);
 			e.setX(SCREEN_WIDTH + (int)(Math.random()*300.0f));
 			e.setY(currentLevelMap.getPixelHeight()-2*currentLevelMap.getTileHeight());
-			e.setVelocityX(-0.02f);
+			e.setVelocityX(-0.01f);
 			e.show();
 			visibleSprites.add(e);
 
@@ -244,7 +242,7 @@ public class MyGame extends GameCore
 		treasure.show();
 		visibleSprites.add(treasure);
 
-	}
+	} // restart
 
 	/**
 	 * pauses the game if not paused by stopping sprite movements
@@ -255,7 +253,7 @@ public class MyGame extends GameCore
 		}
 
 		player.stop();
-	}
+	} // pause
 
 	/**
 	 * called if the sprite is killed and calls the restart method
@@ -264,7 +262,7 @@ public class MyGame extends GameCore
 		pause();
 		restart(false);
 		player.setState(Creature.STATE_NORMAL);
-	}
+	} //gameOver
 
 
 	/**
@@ -309,6 +307,8 @@ public class MyGame extends GameCore
 		//aply offsets to player and draw
 		player.setOffsets(xo, yo);
 		player.draw(g);
+		
+		g.drawRect((int)player.getX()+xo, (int)player.getY()+yo, player.getWidth(), player.getHeight());
 
 		// Apply offsets to sprites then draw them
 		Iterator<Creature> iE = enemies.iterator();
@@ -316,6 +316,7 @@ public class MyGame extends GameCore
 			Creature enemy = iE.next();
 			enemy.setOffsets(xo,yo);
 			enemy.draw(g);
+			g.drawRect((int)enemy.getX()+xo, (int)enemy.getY()+yo, player.getWidth(), player.getHeight());
 		}
 
 
@@ -412,7 +413,13 @@ public class MyGame extends GameCore
 			}
 		}
 
-	}
+		if (attackIsPressed) {
+			player.setAttacking(true);
+		} else {
+			player.setAttacking(false);
+		}
+	} // processInput
+	
 	/**
 	 * 
 	 * @param sprite
@@ -438,7 +445,7 @@ public class MyGame extends GameCore
 			handleTileMapCollisions(sprite, elapsed, true);
 		}
 
-	}
+	} // updateCreature
 
 
 	/**
@@ -497,7 +504,7 @@ public class MyGame extends GameCore
 				sprite.setUpCount(0);
 			}
 		}
-	}
+	} // handleTileMapCollisions
 
 	
 	private void moveX(Creature sprite, long elapsed, int proposedNewX) {
@@ -556,7 +563,7 @@ public class MyGame extends GameCore
 			}
 		}
 
-	}
+	} //moveX
 
 	
 	private void moveY(Creature sprite, long elapsed, int proposedNewY) {
@@ -614,7 +621,7 @@ public class MyGame extends GameCore
 				}
 			}
 		}
-	}
+	} //moveY
 	
 	private void checkPlayerCollision(Creature player, boolean canKill) {
 		if (!player.isAlive()) {
@@ -649,6 +656,7 @@ public class MyGame extends GameCore
 			Creature enemy = (Creature)collisionSprite;
 			// kill the enemy and make player bounce
 
+			
 			if (boundingCircleCollision(player, enemy)) { //if there is also a bounding circle collision with the enemy..
 				if (canKill) {								//and the player is moving downwards
 					this.leftIsPressed = false;				//force the player to stop moving
@@ -659,7 +667,7 @@ public class MyGame extends GameCore
 					enemyDieSound.start();
 					enemy.setState(Creature.STATE_DYING);						//set enemy to dying
 					total+=1000;												//increase score
-					player.setY(enemy.getY() - player.getHeight());				//move the player up
+					//player.setY(enemy.getY() - player.getHeight());				//move the player up
 				} else {									
 					// player dies!
 					this.leftIsPressed = false;					//if the player is not moving horizontally
@@ -672,7 +680,7 @@ public class MyGame extends GameCore
 			}
 
 		}
-	}
+	} //checkPlayerCollision
 
 
 	/**
@@ -694,7 +702,7 @@ public class MyGame extends GameCore
 
 		// no collision found
 		return null;
-	}
+	} //getSpriteCollision
 
 	/**
 	 * Checks and handles collisions with the tile map for the
@@ -739,18 +747,8 @@ public class MyGame extends GameCore
 		System.out.println((minimum*minimum));
 		System.out.println((dx * dx) + (dy * dy));
 		return (((dx * dx) + (dy * dy)) < (minimum*minimum));
-	}
+	} //boundingCircleCollision
 
-	/**private boolean collision(float oldX, float newX, float oldY, float newY, long elapsed) {
-
-		int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
-		int tileY = (int)Math.floor(newY/currentLevelMap.getTileHeight());
-
-		//Rectangle spriteRect = sprite.getBoundingRectSprite((int)newX, (int)newY);
-		Rectangle tileRect = currentLevelMap.getTileBoundingRect(tileX, tileY);
-
-		return ((spriteRect.intersects(tileRect)) && (currentLevelMap.getTileChar(tileX, tileY) != TileMap.AIR));
-	}**/
 
 	private boolean cornerCollision(Creature sprite, long elapsed) {
 		// do this for all four corners - reject movement if true;
@@ -775,7 +773,7 @@ public class MyGame extends GameCore
 		}
 
 		return false;
-	}
+	} // cornerCollision
 
 	/**
 	 * 
@@ -817,7 +815,7 @@ public class MyGame extends GameCore
 			} 					
 		}	
 		return false;
-	}
+	} // tileMapCollision
 
 	/**
 	 * load the animations for the player and initialises the player sprite
@@ -827,20 +825,21 @@ public class MyGame extends GameCore
 		Animation deadRight = loadAnimation("player", "right", "die");
 		Animation idleRight = loadAnimation("player", "right", "idle");
 		Animation walkRight = loadAnimation("player", "right", "walk");
+		Animation attackRight = loadAnimation("player", "right", "attack");
 
 		Animation deadLeft = loadAnimation("player", "left", "die");
 		Animation idleLeft = loadAnimation("player", "left", "idle");
 		Animation walkLeft = loadAnimation("player", "left", "walk");
-
+		Animation attackLeft = loadAnimation("player", "left", "attack");
 
 		deadRight.setLoop(false);
 		deadLeft.setLoop(false);
 
 
 		player = new Creature(idleLeft, idleRight, walkLeft,
-				walkRight, deadLeft, deadRight);
-
-	}
+				walkRight, deadLeft, deadRight, attackLeft, attackRight);
+ 
+	} // loadPlayer 
 
 	/**
 	 * loads the animations for the goal sprite and initialises it
@@ -854,7 +853,7 @@ public class MyGame extends GameCore
 
 		treasure = new PowerUp.Goal(goal);
 
-	}
+	} // loadTreasure
 
 	/**
 	 * 
@@ -874,7 +873,7 @@ public class MyGame extends GameCore
 			anim.addFrame(image, 200);
 		}
 		return anim;
-	}
+	} // loadAnimation
 
 	/**
 	 * loads animations for and creates an enemy sprite
@@ -896,13 +895,8 @@ public class MyGame extends GameCore
 		return new Creature(idleLeft, idleRight, walkLeft,
 				walkRight, deadLeft, deadRight);
 
-	}
+	} // loadEnemySprite
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-
-
-	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
@@ -916,18 +910,6 @@ public class MyGame extends GameCore
 	public void mouseReleased(MouseEvent e) {
 		leftIsPressed = false;
 		rightIsPressed = false;
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -950,17 +932,18 @@ public class MyGame extends GameCore
 
 		switch(key) {
 		case KeyEvent.VK_ESCAPE	: stop(); break;
-		case KeyEvent.VK_UP		: jumpIsPressed = true; break;
+		case KeyEvent.VK_W		: jumpIsPressed = true; break;
 		case KeyEvent.VK_Q		: restart(false); break;
 		//case KeyEvent.VK_S		: Sound s = new Sound("sounds/caw/wav"); s.start(); break;
-		case KeyEvent.VK_RIGHT	: rightIsPressed = true; break;
-		case KeyEvent.VK_LEFT	: leftIsPressed = true; break;
+		case KeyEvent.VK_D	: rightIsPressed = true; break;
+		case KeyEvent.VK_A	: leftIsPressed = true; break;
+		case KeyEvent.VK_K	: attackIsPressed = true; break;
 		//case KeyEvent.VK_P		: paused = !paused; break;
 		default : break;
 		}
 
 		e.consume();
-	}
+	}// keyPressed
 
 	/**
 	 * Override of the keyPressed event defined in GameCore to catch our
@@ -975,17 +958,35 @@ public class MyGame extends GameCore
 		switch (key)
 		{
 		case KeyEvent.VK_ESCAPE : stop(); break;
-		case KeyEvent.VK_UP    	: jumpIsPressed = false; break;
+		case KeyEvent.VK_W    	: jumpIsPressed = false; break;
 		case KeyEvent.VK_Q		: restart(false); break;
-		case KeyEvent.VK_RIGHT 	: rightIsPressed = false; break;
-		case KeyEvent.VK_LEFT   : leftIsPressed = false; break;
+		case KeyEvent.VK_D 	: rightIsPressed = false; break;
+		case KeyEvent.VK_A   : leftIsPressed = false; break;
 		case KeyEvent.VK_P		: paused = !paused; break;
+		case KeyEvent.VK_K	: attackIsPressed = false; break;
 		default :  break;
 		}
 
 		e.consume();
+	} // keyReleased
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
 

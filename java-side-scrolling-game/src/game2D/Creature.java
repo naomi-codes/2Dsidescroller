@@ -20,6 +20,9 @@ public class Creature extends Sprite {
 	private Animation walkRight;
 	private Animation dyingLeft;
 	private Animation dyingRight;
+	
+	private Animation attackLeft;
+	private Animation attackRight;
 
 	protected boolean facing_right = true;
 	protected boolean facing_left = false;
@@ -31,7 +34,7 @@ public class Creature extends Sprite {
 	private boolean onGround;
 	private int upCount;
 
-	
+
 	public int getUpCount() {
 		return upCount;
 	}
@@ -54,7 +57,25 @@ public class Creature extends Sprite {
 		this.walkRight = walkRight;
 		this.dyingLeft = deadLeft;
 		this.dyingRight = deadRight;
-		
+
+		this.onGround = false;
+		this.upCount = 0;
+
+		state = STATE_NORMAL;
+	}
+	
+	public Creature(Animation idleLeft, Animation idleRight, Animation walkLeft,
+			Animation walkRight, Animation deadLeft, Animation deadRight, Animation attackLeft, Animation attackRight) {
+		super(idleRight);
+		this.idleLeft = idleLeft;
+		this.idleRight = idleRight;
+		this.walkLeft = walkLeft;
+		this.walkRight = walkRight;
+		this.dyingLeft = deadLeft;
+		this.dyingRight = deadRight;
+		this.attackLeft = attackLeft;
+		this.attackRight = attackRight;
+
 		this.onGround = false;
 		this.upCount = 0;
 
@@ -103,22 +124,46 @@ public class Creature extends Sprite {
 
 		if (this.getState() == STATE_NORMAL) {
 			if (getVelocityX() == 0) {
-				if (facing_right) {	
+				if (facing_right && attacking) {	
+					newAnim = attackRight;
+				} else if  (facing_right) {
 					newAnim = idleRight;
+				}
+				else if (facing_left && attacking) {
+					newAnim = attackLeft;
 				} else if (facing_left) {
 					newAnim = idleLeft;
-				}
-			}
-			else if (getVelocityX() < 0) {
-				newAnim = walkLeft;
+				} else if (getVelocityX() < 0) {
+					newAnim = walkLeft;
 
-				facing_left = true;
-				facing_right = false;
-			}
-			else if (getVelocityX() > 0) {
-				newAnim = walkRight;
-				facing_right = true;
-				facing_left = false;
+					facing_left = true;
+					facing_right = false;
+				}
+				else if (getVelocityX() > 0) {
+					newAnim = walkRight;
+					facing_right = true;
+					facing_left = false;
+				}
+			} else {
+				if (getVelocityX() < 0) {
+					if (attacking) {
+						newAnim = attackLeft;
+					} else {
+					newAnim = walkLeft;
+
+					facing_left = true;
+					facing_right = false;
+					}
+				}
+				else if (getVelocityX() > 0) {
+					if (attacking) {
+						newAnim = attackRight;
+					} else {
+					newAnim = walkRight;
+					facing_right = true;
+					facing_left = false;
+					}
+				}
 			}
 		} else if (state == STATE_DYING && (newAnim == idleLeft || newAnim == walkLeft)) {
 			newAnim = dyingLeft;
@@ -142,8 +187,6 @@ public class Creature extends Sprite {
 			newAnim.pauseAt(newAnim.getNoOfFrames()-1);
 			setState(STATE_DEAD);
 		}
-		
-		
 	}
 
 
@@ -168,6 +211,13 @@ public class Creature extends Sprite {
 		}
 	}
 
+	public boolean isAttacking() {
+		return attacking;
+	}
+
+	public void setAttacking(boolean attacking) {
+		this.attacking = attacking;
+	}
 
 	public boolean isOnGround() {
 		return onGround;
@@ -176,7 +226,7 @@ public class Creature extends Sprite {
 	public void setOnGround(boolean onGround) {
 		this.onGround = onGround;
 	}
-	
+
 	/**
 	 * 
 	 * @return an array list containing corner points and mid points of sprite
@@ -195,7 +245,7 @@ public class Creature extends Sprite {
 		Point bottomLeft = new Point(sX+5, sY + this.getHeight());
 
 		corners[0] = topLeft;
-		
+
 		corners[1] = topRight;
 		corners[2] = bottomRight;
 		corners[3] = bottomLeft;
@@ -221,7 +271,7 @@ public class Creature extends Sprite {
 
 		corners[0] = midRight;
 		corners[1] = midLeft;
-		
+
 
 		return corners;
 	}
