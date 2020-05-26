@@ -3,6 +3,7 @@ package game2D;
 import javax.swing.ImageIcon;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
@@ -40,6 +41,8 @@ bbbbbbbbbb
  */
 public class TileMap 
 {
+	// constants
+	public static final char AIR = '.';
 
 	private Tile [][] tmap;		// The tile map grid, initially null
 	private int mapWidth=0;		// The maps width in tiles
@@ -370,16 +373,8 @@ public class TileMap
 		Point topLeft = new Point(tileX, tileY);
 		Point topRight = new Point(tileX+this.tileWidth, tileY);
 		
-		Point bottomRight;
-		Point bottomLeft;
-		
-		if (this.getTileChar(x, y) == 'p') {
-			bottomRight = new Point(tileX+this.tileWidth, tileY+((int)(this.tileHeight*0.3)));
-			bottomLeft = new Point(tileX, tileY+((int)(this.tileHeight*0.3)));
-		} else {
-			bottomRight = new Point(tileX+this.tileWidth, tileY+this.tileHeight);
-			bottomLeft = new Point(tileX, tileY+this.tileHeight);
-		}
+		Point bottomRight = new Point(tileX+this.tileWidth, tileY+this.tileHeight);
+		Point bottomLeft = new Point(tileX, tileY+this.tileHeight);
 		
 		//System.out.println("TILE CORNERS");
 		corners[0] = topLeft;
@@ -392,5 +387,9 @@ public class TileMap
 		//System.out.println(corners[3]);
 		
 		return corners;
+	}
+	
+	public Rectangle getTileBoundingRect(int x, int y) {
+		return new Rectangle(new Point(this.getTileXC(x, y), this.getTileYC(x, y)), new Dimension(this.tileWidth, this.tileHeight));
 	}
 }

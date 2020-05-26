@@ -31,8 +31,8 @@ public class MyGame extends GameCore
 
 	// Useful game constants
 	private static final int SCREEN_WIDTH = 900;
-	private static final int SCREEN_HEIGHT = 640;
-	private static final float	GRAVITY = 0.0001f;
+	private static final int SCREEN_HEIGHT = 700;
+	private static final float	GRAVITY = 0.001f;
 
 	// Game state flags
 	private boolean paused = false;
@@ -40,7 +40,7 @@ public class MyGame extends GameCore
 	private boolean leftIsPressed = false;
 	private boolean rightIsPressed = false;
 	private boolean attackIsPressed = false;
-	
+
 	private int level = 0;
 
 	// Game resources	    
@@ -53,14 +53,14 @@ public class MyGame extends GameCore
 
 	//preloaded sound
 	private Sound music = new Sound("sounds/music.wav");
-	
+
 	//maps
 	private TileMap tmapLevel1 = new TileMap();	// level 1 map
 	private TileMap tmapLevel2 = new TileMap(); // level 2 map
 	private TileMap currentLevelMap; //
-	
+
 	private ArrayList<Sprite> visibleSprites = new ArrayList<Sprite>();
-	
+
 	// background images
 	private Image backgroundLevel1;
 	private Image backgroundLevel2;
@@ -102,7 +102,7 @@ public class MyGame extends GameCore
 
 		// creates and loads the animations and assigns initial anim to global player
 		loadPlayer();
-		
+
 		//loads goal sprite
 		loadTreasure();
 
@@ -120,9 +120,6 @@ public class MyGame extends GameCore
 			anim.addFrame(loadImage("images/powerups/crystal01.png"), 150);
 			crystals.add(new PowerUp.Crystal(anim));
 		}
-
-
-
 
 		initialiseGame();
 
@@ -142,7 +139,7 @@ public class MyGame extends GameCore
 	{
 		//initialise the score
 		total = 0;
-		
+
 		//set player speed and location
 		player.setX(20);
 		player.setY(0);
@@ -156,8 +153,9 @@ public class MyGame extends GameCore
 			//e.setX(400);
 			e.setX(SCREEN_WIDTH + (int)(Math.random()*600.0f));
 			e.setY(currentLevelMap.getPixelHeight()-2*e.getHeight());
-			e.setVelocityX(-0.02f);
+			e.setVelocityX(-0.01f);
 			e.show();
+
 			visibleSprites.add(e);
 		}
 
@@ -187,12 +185,12 @@ public class MyGame extends GameCore
 		visibleSprites.clear();
 		enemies.clear();
 		crystals.clear();
-		
+
 		//if the player died and restart was called, clear the score
 		if (!newLevel)
 			total = 0;
 
-		
+
 		//set the player location again
 		player.setX(20);
 		player.setY(0);
@@ -219,7 +217,7 @@ public class MyGame extends GameCore
 			//e.setX(400);
 			e.setX(SCREEN_WIDTH + (int)(Math.random()*300.0f));
 			e.setY(currentLevelMap.getPixelHeight()-2*currentLevelMap.getTileHeight());
-			e.setVelocityX(-0.02f);
+			e.setVelocityX(-0.01f);
 			e.show();
 			visibleSprites.add(e);
 
@@ -244,7 +242,7 @@ public class MyGame extends GameCore
 		treasure.show();
 		visibleSprites.add(treasure);
 
-	}
+	} // restart
 
 	/**
 	 * pauses the game if not paused by stopping sprite movements
@@ -255,7 +253,7 @@ public class MyGame extends GameCore
 		}
 
 		player.stop();
-	}
+	} // pause
 
 	/**
 	 * called if the sprite is killed and calls the restart method
@@ -264,7 +262,7 @@ public class MyGame extends GameCore
 		pause();
 		restart(false);
 		player.setState(Creature.STATE_NORMAL);
-	}
+	} //gameOver
 
 
 	/**
@@ -282,11 +280,11 @@ public class MyGame extends GameCore
 		xo = Math.min(xo,  0);
 		xo = Math.max(xo, SCREEN_WIDTH - currentLevelMap.getPixelWidth());
 
-		
+
 		//add offsets to the background
 		int backgroundX = xo * (SCREEN_WIDTH - background.getWidth(null)) /
 				(SCREEN_WIDTH - currentLevelMap.getPixelWidth());
-		
+
 		//draw the background
 		g.drawImage(background, backgroundX, 0, null);
 
@@ -310,6 +308,7 @@ public class MyGame extends GameCore
 		player.setOffsets(xo, yo);
 		player.draw(g);
 		
+		g.drawRect((int)player.getX()+xo, (int)player.getY()+yo, player.getWidth(), player.getHeight());
 
 		// Apply offsets to sprites then draw them
 		Iterator<Creature> iE = enemies.iterator();
@@ -317,6 +316,7 @@ public class MyGame extends GameCore
 			Creature enemy = iE.next();
 			enemy.setOffsets(xo,yo);
 			enemy.draw(g);
+			g.drawRect((int)enemy.getX()+xo, (int)enemy.getY()+yo, player.getWidth(), player.getHeight());
 		}
 
 
@@ -388,7 +388,7 @@ public class MyGame extends GameCore
 
 	public void processInput() {
 
-		
+
 		if (leftIsPressed) { //left key
 
 			player.setVelocityX(-Creature.MAX_SPEED);
@@ -404,10 +404,22 @@ public class MyGame extends GameCore
 
 		// if the player is on the ground, jump
 		if (jumpIsPressed) {
-			player.jump(false);
+			
+			if (player.isOnGround()) {
+				jumpIsPressed = false;
+				player.jump(false);
+			} else {
+				player.jump(true);
+			}
 		}
 
-	}
+		if (attackIsPressed) {
+			player.setAttacking(true);
+		} else {
+			player.setAttacking(false);
+		}
+	} // processInput
+	
 	/**
 	 * 
 	 * @param sprite
@@ -418,27 +430,9 @@ public class MyGame extends GameCore
 		float dx = sprite.getVelocityX();
 		float dy = sprite.getVelocityY();
 
-		//get the corners for the sprite
-		Point[] spriteCorners = sprite.getCorners();
-		
-		boolean collision = false;
-
-		for (int i = 0; i < spriteCorners.length; i++) {
-			
-			//get the old and new positions for the corner
-			float oldX = spriteCorners[i].x;
-			float newX = oldX + dx*elapsed;
-			float oldY = spriteCorners[i].y;
-			float newY = oldY + dy*elapsed;
-
-			if (collision(oldX, newX, oldY, newY)) { //if there is a collision at any corner
-				collision = true;					 //collision found
-				break;								 //exit the loop
-			}
-		}
-
-		if (!collision) { //no collision
-			
+		if (cornerCollision(sprite,elapsed)) {
+			handleTileMapCollisions(sprite, elapsed, false);
+		} else {
 			//update as expected
 			sprite.setX(sprite.getX()+dx*elapsed); 
 			sprite.setY(sprite.getY()+dy*elapsed);
@@ -449,12 +443,9 @@ public class MyGame extends GameCore
 			}
 			//handle map collisions, player moved is true
 			handleTileMapCollisions(sprite, elapsed, true);
-
-		} else {
-			//handle tile map collisions, player moved is false
-			handleTileMapCollisions(sprite, elapsed, false);
 		}
-	}
+
+	} // updateCreature
 
 
 	/**
@@ -466,177 +457,31 @@ public class MyGame extends GameCore
 	 */
 	public void handleTileMapCollisions(Creature sprite, long elapsed, boolean spriteMoved)
 	{			
-		//current speed of sprite in each direction
+
 		float dx = sprite.getVelocityX();
 		float dy = sprite.getVelocityY();
 
-		//sprites current position
 		float currY = sprite.getY();
-
+		
 		if (!spriteMoved) { //if the sprite hasn't moved since the last update
+			//collisionX(sprite, elapsed);
+			int proposedNewX = (int)(sprite.getX()+dx*elapsed);
+			moveX(sprite, elapsed, proposedNewX);
 			
-			//sprites current mid left and right cos
-			Point[] horizontalPoints = sprite.getHorizontalPoints();
-
-			//sprites current mid top and mid bottom cos
-			Point[] verticalPoints = sprite.getVerticalPoints();
-
-			boolean collisionX = false;
-
-			
-			//find whether or not there was a collision for the x direction
-			
-			for (int i = 0; i < horizontalPoints.length; i++) { 
-				//get the old cos and new x for the given horizontal collision point
-				float oldX = horizontalPoints[i].x;
-				float newX = oldX + dx*elapsed;
-				float oldY = horizontalPoints[i].y;
-				float newY = oldY + dy*elapsed;
-
-				horizontalPoints[i].x = (int)newX;
-
-				if (collision(oldX, newX, oldY, newY)) {
-					collisionX = true;
-					break;
-				}
-			}
-
-			if (collisionX) { //if there was a horizontal collision
-
-
-				Point[] collisions = new Point[horizontalPoints.length];
-
-				for (int k = 0; k < horizontalPoints.length; k++) {
-					
-					//get the tile cos for the tile collided with
-					int tileX = (int)horizontalPoints[k].x/currentLevelMap.getTileWidth();
-
-					int tileY = (int)horizontalPoints[k].y/currentLevelMap.getTileHeight();
-
-					//if it is not a ground tile
-					if (currentLevelMap.getTileChar(tileX, tileY) != '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g' 
-							&& currentLevelMap.getTileChar(tileX, tileY) != '?') {
-						collisions[k] = new Point(tileX, tileY);
-					}
-				}
-
-				//find the closest tile edge to line up with 
-				
-				double minimumDistance = 64;
-				int closestX = (int)sprite.getX();
-				//int finalYdiff = 0;
-				for (int j = 0; j < collisions.length; j++) {
-
-					if (collisions[j] != null) {		
-						Point[] tileCorners = currentLevelMap.getTileCorners(collisions[j].x, collisions[j].y);
-
-						for (int i = 0; i < tileCorners.length; i++) {
-							int diffX = Math.abs(horizontalPoints[j].x - tileCorners[i].x);
-
-							if (diffX <= minimumDistance) {
-								minimumDistance = diffX;
-								closestX = tileCorners[j].x;
-							}
-						}
-					}
-				}
-
-				//correct the sprite x
-				if (dx < 0) {
-					sprite.setX(closestX);}
-				if (dx > 0) {
-					sprite.setX(closestX-sprite.getWidth());
-				}
-				sprite.setVelocityX(sprite.getVelocityX());
-
-
-			} else {
-				sprite.setX(sprite.getX()+dx*elapsed);
-			}
-
-
-			
-			//repeat for the y direction
-
-			boolean collisionY = false;
-
-			for (int i = 0; i < verticalPoints.length; i++) {
-				float oldX = verticalPoints[i].x;
-				float newX = oldX + dx*elapsed;
-				float oldY = verticalPoints[i].y;
-				float newY = oldY + dy*elapsed;
-
-				//verticalPoints[i].y = (int)newY;
-
-				if (collision(oldX, newX, oldY, newY)) {
-					collisionY = true;
-					break;
-				}
-			}
-
-			if (collisionY) {
-				verticalPoints = sprite.getVerticalPoints();
-				Point[] collisions = new Point[verticalPoints.length];
-
-				for (int k = 0; k < horizontalPoints.length; k++) {
-
-					int tileX = (int)verticalPoints[k].x/currentLevelMap.getTileWidth();
-
-					int tileY = (int)verticalPoints[k].y/currentLevelMap.getTileHeight();
-
-					if (currentLevelMap.getTileChar(tileX, tileY) != '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g' 
-							&& currentLevelMap.getTileChar(tileX, tileY) != '?') {
-						collisions[k] = new Point(tileX, tileY);
-					}
-				}
-
-				double minimumDistance = 64;
-				int closestY = (int)sprite.getY();
-				for (int j = 0; j < collisions.length; j++) {
-
-					if (collisions[j] != null) {		
-						Point[] tileCorners = currentLevelMap.getTileCorners(collisions[j].x, collisions[j].y);
-
-						for (int i = 0; i < tileCorners.length; i++) {
-							int diffY = Math.abs(verticalPoints[j].y - tileCorners[i].y);
-
-							if (diffY <= minimumDistance) {
-								minimumDistance = diffY;
-								closestY = tileCorners[j].y;
-							}
-						}
-					}
-				}
-
-				if (dy > 0) {
-					sprite.setY(sprite.getY());
-				} else if (dy < 0) {
-					sprite.setY(closestY);
-				}
-				sprite.collideVertical();
-			} else {
-				sprite.setY(currY+dy*elapsed);
-			}
-
+			int proposedNewY = (int)(sprite.getY() + dy * elapsed);
+			moveY(sprite, elapsed, proposedNewY);
 
 			if (sprite.equals(player)) {
 				boolean canKill = (currY < sprite.getY());
 				checkPlayerCollision(player, canKill);
 			}
-		}
-
+		} 
 
 		//the player is below the ground
 		if (sprite.getY() + sprite.getHeight() > currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight()) //
 		{
 			// Put the player back on the map
 			sprite.setY(currentLevelMap.getPixelHeight()  - sprite.getHeight() - currentLevelMap.getTileHeight()); //- currentLevelMap.getTileHeight()
-			// and make them bounce
-
-			if (sprite.equals(player)) {
-				sprite.setVelocityY(-sprite.getVelocityY() * (0.03f * elapsed));
-			}
-
 		}
 
 		//if the player is at the far left of the map
@@ -652,13 +497,132 @@ public class MyGame extends GameCore
 			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null));
 			sprite.setVelocityX(-sprite.getVelocityX());
 		}
-	}
-	
-	private void collisionX() {
 		
-	}
+		if (sprite.equals(player)) {
+			if (sprite.getY() + sprite.getHeight() >= (currentLevelMap.getPixelHeight() - currentLevelMap.getTileHeight() - 2 )) {
+				sprite.setOnGround(true);
+				sprite.setUpCount(0);
+			}
+		}
+	} // handleTileMapCollisions
+
+	
+	private void moveX(Creature sprite, long elapsed, int proposedNewX) {
+		//current speed of sprite  in the x direction
+		float dx = sprite.getVelocityX();
+
+		//whether or not there has been a collision
+		boolean collision = false;
+
+		int newX = (int)sprite.getX();
+
+		// while we still have not collided and we have less than the proposed amount
+
+		if ( dx > 0) {
+			// check if is left collision or right collision
+			while (newX <= proposedNewX) {
+				if (!collision) {
+					newX = (int)sprite.getX() + 1;
+
+					int tileX = (int)Math.floor((newX+ sprite.getWidth())/currentLevelMap.getTileWidth());
+					int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
+
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+						sprite.setX(newX);
+					} else {
+						collision = true;
+						sprite.setVelocityX(-sprite.getVelocityX());
+						sprite.setX(sprite.getX()-1);
+						break;
+					}
+
+				}
+			}
+		}
+		
+		if ( dx < 0) {
+			// check if is left collision or right collision
+			while (newX >= proposedNewX) {
+				if (!collision) {
+					newX = (int)sprite.getX() - 1;
+
+					int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
+					int tileY = (int)Math.floor((sprite.getY()+sprite.getHeight()/2)/currentLevelMap.getTileHeight());
+
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+						sprite.setX(newX);
+					} else {
+						collision = true;
+						sprite.setX(currentLevelMap.getTileXC(tileX+1, tileY));
+						sprite.setX(sprite.getX()+1);
+						sprite.setVelocityX(-sprite.getVelocityX());
+						break;
+					}
+
+				}
+			}
+		}
+
+	} //moveX
+
+	
+	private void moveY(Creature sprite, long elapsed, int proposedNewY) {
+		//current speed of sprite  in the x direction
+		float dy = sprite.getVelocityY();
+
+		//whether or not there has been a collision
+		boolean collision = false;
+
+		int newY = (int)sprite.getY();
+
+		// while we still have not collided and we have less than the proposed amount
+
+		if ( dy > 0) {
+			// check if is top collision or bottom collision
+			while (newY <= proposedNewY) {
+				if (!collision) {
+					newY = (int)sprite.getY() + 1;
+
+					int tileX = (int)Math.floor((sprite.getX()+sprite.getWidth()/2)/currentLevelMap.getTileWidth());
+					int tileY = (int)Math.floor((newY + sprite.getHeight())/currentLevelMap.getTileHeight());
+
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+						sprite.setY(newY);
+					} else {
+						collision = true;
+						sprite.setOnGround(collision);
+						sprite.setUpCount(0);
+						break;
+					}
+
+				}
+			}
+		}
+		
+		if ( dy < 0) {
+			// check if is left collision or right collision
+			while (newY >= proposedNewY) {
+				if (!collision) {
+					newY = (int)sprite.getY() - 1;
+
+					int tileX = (int)Math.floor((sprite.getX()+sprite.getWidth()/2)/currentLevelMap.getTileWidth());
+					int tileY = (int)Math.floor((newY/currentLevelMap.getTileHeight()));
 
 
+					if (currentLevelMap.getTileChar(tileX, tileY) == '.' && currentLevelMap.getTileChar(tileX, tileY) != 'g') {
+						sprite.setY(newY);
+					} else {
+						collision = true;
+						sprite.setY(currentLevelMap.getTileYC(tileX, tileY+1));
+						sprite.setVelocityY(0);
+						break;
+					}
+
+				}
+			}
+		}
+	} //moveY
+	
 	private void checkPlayerCollision(Creature player, boolean canKill) {
 		if (!player.isAlive()) {
 			return;
@@ -692,6 +656,7 @@ public class MyGame extends GameCore
 			Creature enemy = (Creature)collisionSprite;
 			// kill the enemy and make player bounce
 
+			
 			if (boundingCircleCollision(player, enemy)) { //if there is also a bounding circle collision with the enemy..
 				if (canKill) {								//and the player is moving downwards
 					this.leftIsPressed = false;				//force the player to stop moving
@@ -702,7 +667,7 @@ public class MyGame extends GameCore
 					enemyDieSound.start();
 					enemy.setState(Creature.STATE_DYING);						//set enemy to dying
 					total+=1000;												//increase score
-					player.setY(enemy.getY() - player.getHeight());				//move the player up
+					//player.setY(enemy.getY() - player.getHeight());				//move the player up
 				} else {									
 					// player dies!
 					this.leftIsPressed = false;					//if the player is not moving horizontally
@@ -715,7 +680,7 @@ public class MyGame extends GameCore
 			}
 
 		}
-	}
+	} //checkPlayerCollision
 
 
 	/**
@@ -737,7 +702,7 @@ public class MyGame extends GameCore
 
 		// no collision found
 		return null;
-	}
+	} //getSpriteCollision
 
 	/**
 	 * Checks and handles collisions with the tile map for the
@@ -752,17 +717,11 @@ public class MyGame extends GameCore
 			return false;
 		}
 
-		// get the pixel location of the Sprites
-		int s1x = Math.round(s1.getX());
-		int s1y = Math.round(s1.getY());
-		int s2x = Math.round(s2.getX());
-		int s2y = Math.round(s2.getY());
+		Rectangle r1 = s1.getBoundingRectSprite();
+		Rectangle r2 = s2.getBoundingRectSprite();
 
-		//returns true if the boxes over lap
-		return ((s1x < s2x + s2.getWidth()) &&
-				(s2x < s1x + s1.getWidth()) &&
-				(s1y < s2y + s2.getHeight()) &&
-				(s2y < s1y + s1.getHeight()));  	
+		return r1.intersects(r2);
+
 	}//boundingBoxCollision
 
 	/**
@@ -788,7 +747,33 @@ public class MyGame extends GameCore
 		System.out.println((minimum*minimum));
 		System.out.println((dx * dx) + (dy * dy));
 		return (((dx * dx) + (dy * dy)) < (minimum*minimum));
-	}
+	} //boundingCircleCollision
+
+
+	private boolean cornerCollision(Creature sprite, long elapsed) {
+		// do this for all four corners - reject movement if true;
+		// when you do this for all four corners make sure to "switch off checking for the ground
+		// and add a constant to say where ground level is in the tilemap file
+
+		Point[] spriteCorners = sprite.getCorners();
+
+		for (int i = 0; i < spriteCorners.length; i++) {
+
+			float oldX = spriteCorners[i].x;
+			float newX = oldX + sprite.getVelocityX()*elapsed;
+			float oldY = spriteCorners[i].y;
+			float newY = oldY + sprite.getVelocityY()*elapsed;
+
+			int tileX = (int)Math.floor(newX/currentLevelMap.getTileWidth());
+			int tileY = (int)Math.floor(newY/currentLevelMap.getTileHeight());
+
+			if ((currentLevelMap.getTileChar(tileX, tileY) != '.'))  {
+				return true;
+			}
+		}
+
+		return false;
+	} // cornerCollision
 
 	/**
 	 * 
@@ -798,7 +783,7 @@ public class MyGame extends GameCore
 	 * @param newY sprite new y after movement
 	 * @return true if there is no collision with a tile at any point between the old and new cos
 	 */
-	public boolean collision(float oldX, float newX, float oldY, float newY) {
+	public boolean tileMapCollision(float oldX, float newX, float oldY, float newY) {
 
 		float fromX = Math.min(oldX, newX);
 		float fromY = Math.min(oldY, newY);
@@ -830,7 +815,7 @@ public class MyGame extends GameCore
 			} 					
 		}	
 		return false;
-	}
+	} // tileMapCollision
 
 	/**
 	 * load the animations for the player and initialises the player sprite
@@ -840,20 +825,21 @@ public class MyGame extends GameCore
 		Animation deadRight = loadAnimation("player", "right", "die");
 		Animation idleRight = loadAnimation("player", "right", "idle");
 		Animation walkRight = loadAnimation("player", "right", "walk");
+		Animation attackRight = loadAnimation("player", "right", "attack");
 
 		Animation deadLeft = loadAnimation("player", "left", "die");
 		Animation idleLeft = loadAnimation("player", "left", "idle");
 		Animation walkLeft = loadAnimation("player", "left", "walk");
-
+		Animation attackLeft = loadAnimation("player", "left", "attack");
 
 		deadRight.setLoop(false);
 		deadLeft.setLoop(false);
 
 
 		player = new Creature(idleLeft, idleRight, walkLeft,
-				walkRight, deadLeft, deadRight);
-
-	}
+				walkRight, deadLeft, deadRight, attackLeft, attackRight);
+ 
+	} // loadPlayer 
 
 	/**
 	 * loads the animations for the goal sprite and initialises it
@@ -867,7 +853,7 @@ public class MyGame extends GameCore
 
 		treasure = new PowerUp.Goal(goal);
 
-	}
+	} // loadTreasure
 
 	/**
 	 * 
@@ -887,7 +873,7 @@ public class MyGame extends GameCore
 			anim.addFrame(image, 200);
 		}
 		return anim;
-	}
+	} // loadAnimation
 
 	/**
 	 * loads animations for and creates an enemy sprite
@@ -909,20 +895,15 @@ public class MyGame extends GameCore
 		return new Creature(idleLeft, idleRight, walkLeft,
 				walkRight, deadLeft, deadRight);
 
-	}
+	} // loadEnemySprite
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		
-
-	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (e.getX() < player.getX())
 			leftIsPressed = true;
 		if (e.getX() > player.getX());
-			rightIsPressed = true;
+		rightIsPressed = true;
 	}
 
 	@Override
@@ -933,22 +914,10 @@ public class MyGame extends GameCore
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (e.getWheelRotation() > 2)
 			player.jump(false);
-		
+
 	}
 
 	/**
@@ -963,17 +932,18 @@ public class MyGame extends GameCore
 
 		switch(key) {
 		case KeyEvent.VK_ESCAPE	: stop(); break;
-		case KeyEvent.VK_UP		: jumpIsPressed = true; break;
+		case KeyEvent.VK_W		: jumpIsPressed = true; break;
 		case KeyEvent.VK_Q		: restart(false); break;
 		//case KeyEvent.VK_S		: Sound s = new Sound("sounds/caw/wav"); s.start(); break;
-		case KeyEvent.VK_RIGHT	: rightIsPressed = true; break;
-		case KeyEvent.VK_LEFT	: leftIsPressed = true; break;
+		case KeyEvent.VK_D	: rightIsPressed = true; break;
+		case KeyEvent.VK_A	: leftIsPressed = true; break;
+		case KeyEvent.VK_K	: attackIsPressed = true; break;
 		//case KeyEvent.VK_P		: paused = !paused; break;
 		default : break;
 		}
 
 		e.consume();
-	}
+	}// keyPressed
 
 	/**
 	 * Override of the keyPressed event defined in GameCore to catch our
@@ -988,17 +958,35 @@ public class MyGame extends GameCore
 		switch (key)
 		{
 		case KeyEvent.VK_ESCAPE : stop(); break;
-		case KeyEvent.VK_UP    	: jumpIsPressed = false; break;
+		case KeyEvent.VK_W    	: jumpIsPressed = false; break;
 		case KeyEvent.VK_Q		: restart(false); break;
-		case KeyEvent.VK_RIGHT 	: rightIsPressed = false; break;
-		case KeyEvent.VK_LEFT   : leftIsPressed = false; break;
+		case KeyEvent.VK_D 	: rightIsPressed = false; break;
+		case KeyEvent.VK_A   : leftIsPressed = false; break;
 		case KeyEvent.VK_P		: paused = !paused; break;
+		case KeyEvent.VK_K	: attackIsPressed = false; break;
 		default :  break;
 		}
 
 		e.consume();
+	} // keyReleased
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
 

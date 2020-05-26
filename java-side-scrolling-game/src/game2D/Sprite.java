@@ -143,6 +143,8 @@ public class Sprite {
         //y += dy * elapsedTime;
         
         //anim.update(elapsedTime);
+    	
+    	
         width = anim.getImage().getWidth(null);
         height = anim.getImage().getHeight(null);
         if (width > height)
@@ -362,6 +364,34 @@ public class Sprite {
     	xoff = x;
     	yoff = y;
     }
+    
+    public Point getNewCentrePoint(int x, int y) {
+    	float centreX = x + this.getWidth()/2;
+    	float centreY = y + this.getHeight()/2;
+    	
+    	return new Point((int)centreX, (int)centreY);
+    }
        
-
+	public Rectangle getBoundingRectSprite() {
+		return new Rectangle(new Point((int)this.getX(), (int)this.getY()), new Dimension(this.getWidth(), this.getHeight()));
+	}
+	
+	public Rectangle getBoundingRectSprite(int x, int y) {
+		return new Rectangle(new Point(x, y), new Dimension(this.getWidth(), this.getHeight()));
+	}
+	
+	public Rectangle getVerticalBoundingRectSprite() {
+		int x = (int) this.getX()+ this.getWidth()/3;
+		int y = (int) (this.getY());
+		
+		return new Rectangle(new Point(x, y), new Dimension(this.getWidth()/3, this.getHeight()));
+	}
+	
+	public Rectangle getHorizontalBoundingRectSprite() {
+		int x = (int) this.getX();
+		int y = (int) this.getY() + this.getHeight()/3;
+		
+		return new Rectangle(new Point(x, y), new Dimension(this.getWidth(), this.getHeight()/3));
+	}
+	
 }
