@@ -21,7 +21,7 @@ import game2D.*;
 // override this with your own event handler.
 
 /**
- * @author 2425693
+ * @author naomi lambert
  *
  */
 @SuppressWarnings("serial")

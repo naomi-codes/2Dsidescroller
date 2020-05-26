@@ -6,6 +6,8 @@ import javax.swing.ImageIcon;
 /**
     Simple abstract class used for testing. Subclasses should
     implement the draw() method.
+    
+    @author David Cairns
 */
 public abstract class GameCoreFS {
 

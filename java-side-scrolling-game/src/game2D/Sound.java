@@ -13,13 +13,6 @@ public class Sound extends Thread {
 		finished = false;
 	}
 
-	/**
-	 * run will play the actual sound but you should not call it directly.
-	 * You need to call the 'start' method of your sound object (inherited
-	 * from Thread, you do not need to declare your own). 'run' will
-	 * eventually be called by 'start' when it has been scheduled by
-	 * the process scheduler.
-	 */
 	public void run() {
 		try {
 			File file = new File(filename);

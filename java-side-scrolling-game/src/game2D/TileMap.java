@@ -360,35 +360,13 @@ public class TileMap
 			}
 		}		
 	}
-
-	public Point[] getTileCorners(int x, int y) {
-		if (!valid(x,y)) return null;
-		
-		
-		int tileX = this.getTileXC(x, y);
-		int tileY = this.getTileYC(x, y);
-		
-		Point[] corners = new Point[4];
-		
-		Point topLeft = new Point(tileX, tileY);
-		Point topRight = new Point(tileX+this.tileWidth, tileY);
-		
-		Point bottomRight = new Point(tileX+this.tileWidth, tileY+this.tileHeight);
-		Point bottomLeft = new Point(tileX, tileY+this.tileHeight);
-		
-		//System.out.println("TILE CORNERS");
-		corners[0] = topLeft;
-		//System.out.println(corners[0]);
-		corners[1] = topRight;
-		//System.out.println(corners[1]);
-		corners[2] = bottomRight;
-		//System.out.println(corners[2]);
-		corners[3] = bottomLeft;
-		//System.out.println(corners[3]);
-		
-		return corners;
-	}
 	
+	/**
+	 * Returns the boudning rect of the given tile at tiles[x][y]
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public Rectangle getTileBoundingRect(int x, int y) {
 		return new Rectangle(new Point(this.getTileXC(x, y), this.getTileYC(x, y)), new Dimension(this.tileWidth, this.tileHeight));
 	}

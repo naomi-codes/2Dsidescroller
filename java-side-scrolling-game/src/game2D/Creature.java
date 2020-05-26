@@ -4,6 +4,14 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+
+/**
+ * 
+ * The Creature Class handles sprite interactions relating to the player and enemy sprites
+ * 
+ * @author naomi lambert
+ *
+ */
 public class Creature extends Sprite {
 
 	private static final int DIE_TIME = 1000;
@@ -35,13 +43,6 @@ public class Creature extends Sprite {
 	private int upCount;
 
 
-	public int getUpCount() {
-		return upCount;
-	}
-
-	public void setUpCount(int upCount) {
-		this.upCount = upCount;
-	}
 
 	//useful constants
 	public static final float JUMP_SPEED = -0.5f;
@@ -82,6 +83,15 @@ public class Creature extends Sprite {
 		state = STATE_NORMAL;
 	}
 
+
+	public int getUpCount() {
+		return upCount;
+	}
+
+	public void setUpCount(int upCount) {
+		this.upCount = upCount;
+	}
+	
 	/**
     Gets the state of this Creature. The state is either
     STATE_NORMAL, STATE_DYING, or STATE_DEAD.
@@ -89,7 +99,6 @@ public class Creature extends Sprite {
 	public int getState() {
 		return state;
 	}
-
 
 	/**
 	    Sets the state of this Creature to STATE_NORMAL,
@@ -255,6 +264,13 @@ public class Creature extends Sprite {
 		return corners;
 	}
 	
+	/**
+	 * 
+	 * Returns the corners of the sprite according to its current image and location
+	 * 
+	 * @param x
+	 * @return
+	 */
 	public Point[] getCorners(int x) {
 		Point[] corners = new Point[4];
 
@@ -262,10 +278,8 @@ public class Creature extends Sprite {
 		int sY = (int)this.getY();
 
 		Point topLeft = new Point(sX, sY);
-		//Point midTop = new Point(sX + this.getWidth()/2, sY);
 		Point topRight = new Point(sX + this.getWidth()-5, sY);
 		Point bottomRight = new Point(sX + this.getWidth()-5, sY + this.getHeight());
-		//Point midBottom = new Point(sX + this.getWidth()/2, sY + this.getHeight());
 		Point bottomLeft = new Point(sX, sY + this.getHeight());
 
 		corners[0] = topLeft;
@@ -273,8 +287,6 @@ public class Creature extends Sprite {
 		corners[1] = topRight;
 		corners[2] = bottomRight;
 		corners[3] = bottomLeft;
-		//corners[4] = midBottom;
-		//corners[5] = midTop;
 
 		return corners;
 	}

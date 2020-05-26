@@ -2,6 +2,8 @@ package game2D;
 
 /**
     A PowerUp class is a Sprite that the player can pick up.
+    
+    @author naomi lambert
  */
 public abstract class PowerUp extends Sprite {
 

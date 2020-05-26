@@ -13,7 +13,7 @@ import javax.swing.ImageIcon;
     The Animation class manages a series of images (frames) and
     the amount of time to display each frame.
     
-    @author David Cairns
+    @author naomi lambert
 */
 public class Animation {
 
