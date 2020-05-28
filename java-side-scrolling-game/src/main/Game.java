@@ -26,7 +26,7 @@ import game2D.*;
  */
 @SuppressWarnings("serial")
 
-public class MyGame extends GameCore 
+public class Game extends GameCore 
 {
 
 	// Useful game constants
@@ -75,7 +75,7 @@ public class MyGame extends GameCore
 	 * @param args	The list of parameters this program might use (ignored)
 	 */
 	public static void main(String[] args) {
-		MyGame gct = new MyGame();
+		Game gct = new Game();
 		gct.init();
 
 		// Start in windowed mode with the given screen height and width
