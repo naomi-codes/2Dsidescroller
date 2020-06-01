@@ -483,7 +483,7 @@ public class Game extends GameCore
 			moveX(sprite, elapsed, proposedNewX);
 
 			int proposedNewY = (int)(sprite.getY() + dy * elapsed);
-			moveY(sprite, elapsed, proposedNewY);
+			//moveY(sprite, elapsed, proposedNewY);
 
 			if (sprite.equals(player)) {
 				boolean canKill = (currY < sprite.getY());
@@ -510,7 +510,6 @@ public class Game extends GameCore
 	private void moveX(Creature sprite, long elapsed, int proposedNewX) {
 		//current speed of sprite  in the x direction
 		float dx = sprite.getVelocityX();
-		float dy = sprite.getVelocityY();
 
 		//whether or not there has been a collision
 		boolean collision = false;
@@ -524,7 +523,6 @@ public class Game extends GameCore
 			sprite.setX(currentLevelMap.getPixelWidth() - sprite.getImage().getWidth(null) - 2);	
 		} else {
 			if ( dx > 0) {
-				// check if is left collision or right collision
 				while (!collision) {
 					newX = (int)sprite.getX() + 2;
 
@@ -549,7 +547,6 @@ public class Game extends GameCore
 			}
 
 			if ( dx < 0) {
-				// check if is left collision or right collision
 				while (newX >= proposedNewX) {
 					if (!collision) {
 						newX = (int)sprite.getX() - 2;
